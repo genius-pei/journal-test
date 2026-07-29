@@ -1,1 +1,6 @@
 bench/logs/
+bench/test
+example/test
+extend/test
+logfile/
+*.log
