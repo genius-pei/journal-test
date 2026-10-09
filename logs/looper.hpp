@@ -70,10 +70,11 @@ namespace yimingcode
                         // std::cerr << "Log message too large: " << len << " bytes" << std::endl;
                         // return;
                     } else {
-                        // 等待直到有足够的空间
+                        // 等待直到有足够的空间，或收到停止信号
                         _cond_pro.wait(lock, [&](){ 
-                            return _pro_buf.writeAbleSize() >= len; 
+                            return _stop || _pro_buf.writeAbleSize() >= len; 
                         });
+                        if (_stop) return;
                         _pro_buf.push(data, len);
                     }
                 }
