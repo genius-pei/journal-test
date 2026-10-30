@@ -7,11 +7,11 @@ void test_log(const std::string name)
 {   
     INFO("%s","测试开始");
         yimingcode::Logger::ptr logger =yimingcode::LoggerManager::getInstance().getLogger(name);
-        DEBUG( "%s", "测试日志");
-        INFO( "%s", "测试日志");
-        WARN("%s", "测试日志");
-        ERROR("%s", "测试日志");
-        FATAL( "%s", "测试日志");  
+        LOG_DEBUG(logger, "%s", "测试日志");
+        LOG_INFO(logger, "%s", "测试日志");
+        LOG_WARN(logger,"%s", "测试日志");
+        LOG_ERROR(logger,"%s", "测试日志");
+        LOG_FATAL(logger, "%s", "测试日志");
     INFO("%s","测试结束");
 }
 

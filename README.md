@@ -42,14 +42,13 @@ int main() {
     DEBUG("hello %s", "yimingcode");
 
     // 构建自定义日志器
-    auto logger = yimingcode::GlobalLoggerBuilder()
-        .buildLoggerName("mylogger")
-        .buildLimitLevel(yimingcode::LogLevel::DEBUG)
-        .buildSinker<yimingcode::FileSink>("./app.log")
-        .buildSinker<yimingcode::StdoutSink>()
-        .buildLoggerType<yimingcode::AsyncLogger>()
-        .build();
-
+    yimingcode::GlobalLoggerBuilder builder;
+    builder.buildLoggerName("mylogger");
+    builder.buildLoggerLevel(yimingcode::LogLevel::value::DEBUG);
+    builder.buildSink<yimingcode::FileSink>("./app.log");
+    builder.buildSink<yimingcode::StdoutSink>();
+    builder.buildLoggerType(yimingcode::LoggerType::LOGGER_ASYNC);
+    auto logger = builder.build();
     LOG_DEBUG(logger, "this is a %s log", "debug");
     LOG_INFO(logger, "hello %s", "async");
 }
@@ -89,3 +88,16 @@ cd bench && make && ./test
 ## 性能
 
 在 bench/ 目录下运行基准测试，涵盖单线程/多线程的同步与异步场景。
+
+当前异步基准仅等待生产线程结束，数值表示入队性能，不代表全部写入完成或落盘性能。
+
+## 异步错误与时间滚动
+
+异步写入异常不会逃出工作线程。某个 Sink 失败后仍会尝试本批次的其他 Sink，
+随后向标准错误报告第一个异常，并将失败批次数加一；失败数据不重试，后续批次继续消费。
+可通过 `AsyncLogger::errorCount()` 查询累计失败批次数。同步日志仍将写入异常交给调用方。
+停止后不再接受新数据；停止会等待已经接收的数据完成消费，但不等同于文件流 flush 或 fsync。
+
+时间滚动以 Unix 时间戳除以窗口秒数划分窗口，天窗口是固定 86400 秒，不表示本地自然日。
+
+回归检查：在项目根目录执行 `bash tests/run.sh`（Linux、g++、Python 3）。

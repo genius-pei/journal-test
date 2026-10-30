@@ -7,6 +7,8 @@
 #include<functional>
 #include<memory>
 #include<atomic>
+#include<cstdio>
+#include<exception>
 
 namespace yimingcode
 {
@@ -21,7 +23,8 @@ namespace yimingcode
         public:
             using ptr = std::shared_ptr<ASyncLogLooper>;
             ASyncLogLooper()
-            :_stop(false)
+            :_error_count(0)
+            ,_stop(false)
             ,_looper_type(AsyncType::ASYNC_SAFE)
             ,_thread(std::thread(&ASyncLogLooper::threadEntry, this))
             {
@@ -29,6 +32,7 @@ namespace yimingcode
 
             ASyncLogLooper(Functor cb, AsyncType type)
             :_callBack(cb)
+            ,_error_count(0)
             ,_stop(false)
             ,_looper_type(type)
             ,_thread(std::thread(&ASyncLogLooper::threadEntry, this))
@@ -56,6 +60,7 @@ namespace yimingcode
             void push(const char* data, size_t len)
             {
                 std::unique_lock<std::mutex> lock(_mutex);
+                if (_stop) return;
                 
                 if (_looper_type == AsyncType::ASYNC_UNSAFE) {
                     // 不安全模式：直接写入，如果空间不足则扩容
@@ -83,6 +88,11 @@ namespace yimingcode
                 _cond_con.notify_one();
             }
                         
+            size_t errorCount() const
+            {
+                return _error_count.load();
+            }
+
         private:
         //线程入口函数--对消费缓冲区的数据进行处理，处理完毕后，初始化缓冲区，交换缓冲区
            void threadEntry()
@@ -113,7 +123,15 @@ namespace yimingcode
                 
                 //  处理数据
                 if (_callBack && _con_buf.readAbleSize() > 0) {
-                    _callBack(_con_buf);
+                    try {
+                        _callBack(_con_buf);
+                    } catch (const std::exception& e) {
+                        ++_error_count;
+                        std::fprintf(stderr, "Async log write failed: %s\n", e.what());
+                    } catch (...) {
+                        ++_error_count;
+                        std::fprintf(stderr, "Async log write failed: unknown exception\n");
+                    }
                 }
                 
                 //  重置缓冲区
@@ -125,6 +143,7 @@ namespace yimingcode
         }
         private:
             Functor _callBack;//回调函数
+            std::atomic<size_t> _error_count;//写入失败的批次数
              
         private:
         AsyncType _looper_type;

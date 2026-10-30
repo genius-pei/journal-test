@@ -24,8 +24,9 @@ public:
             case TimeGap::GAP_HOUR:   _gap_size = 3600; break;
             case TimeGap::GAP_DAY:    _gap_size = 3600 * 24; break;
         }
-        _cur_gap = (_gap_size == 1) ? 0 : yimingcode::util::Date::now() % _gap_size;
-        std::string filename = createNewFile();
+        time_t cur = yimingcode::util::Date::now();
+        _cur_gap = cur / _gap_size;
+        std::string filename = createNewFile(cur);
         yimingcode::util::file::create_directory(yimingcode::util::file::path(filename));
         _ofs.open(filename, std::ios::binary | std::ios::app);
         assert(_ofs.is_open());
@@ -33,11 +34,11 @@ public:
 
     void log(const char* data, size_t len) {
         time_t cur = yimingcode::util::Date::now();
-        size_t cur_slot = (cur % _gap_size);
+        size_t cur_slot = cur / _gap_size;
         if (cur_slot != _cur_gap) {
             _cur_gap = cur_slot;
             _ofs.close();
-            std::string filename = createNewFile();
+            std::string filename = createNewFile(cur);
             _ofs.open(filename, std::ios::binary | std::ios::app);
             assert(_ofs.is_open());
         }
@@ -50,8 +51,7 @@ public:
     }
 
 private:
-    std::string createNewFile() {
-        time_t t = yimingcode::util::Date::now();
+    std::string createNewFile(time_t t) {
         struct tm lt;
         localtime_r(&t, &lt);
 

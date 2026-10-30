@@ -170,11 +170,22 @@ namespace yimingcode
             const char* data = buf.begin();
             size_t len = buf.readAbleSize();
             if (len == 0) return;
+            std::exception_ptr error;
             for (auto& sink : _sinks) {
                 if (sink) {
-                    sink->log(data, len);
+                    try {
+                        sink->log(data, len);
+                    } catch (...) {
+                        if (!error) error = std::current_exception();
+                    }
                 }
             }
+            if (error) std::rethrow_exception(error);
+        }
+
+        size_t errorCount() const
+        {
+            return _looper->errorCount();
         }
 
     private:
