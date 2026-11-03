@@ -1,5 +1,7 @@
 # 高性能 C++ 日志库
 
+[![C++ CI](https://github.com/genius-pei/journal-test/actions/workflows/ci.yml/badge.svg)](https://github.com/genius-pei/journal-test/actions/workflows/ci.yml)
+
 一个 C++11 日志库，支持同步/异步日志、多级别过滤、灵活的输出格式和可扩展的 Sink 架构。
 
 ## 特性
@@ -29,7 +31,6 @@
 ├── example/          使用示例
 ├── extend/           Sink 扩展示例（按时间滚动）
 ├── bench/            性能基准测试
-├── pratice/          练习目录
 └── tests/            回归测试
 ```
 
@@ -102,3 +103,7 @@ cd bench && make && ./test
 时间滚动以 Unix 时间戳除以窗口秒数划分窗口，天窗口是固定 86400 秒，不表示本地自然日。
 
 回归检查：在项目根目录执行 `bash tests/run.sh`（Linux、g++、Python 3）。
+
+## 持续集成
+
+GitHub Actions 在推送到 main、提交 Pull Request 或手动触发时，使用 Ubuntu 24.04 编译 example 和 extend，并执行 bash tests/run.sh。回归脚本同时编译、运行上面的 README 示例；顶部徽章显示最近运行状态。
