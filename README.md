@@ -29,7 +29,8 @@
 ├── example/          使用示例
 ├── extend/           Sink 扩展示例（按时间滚动）
 ├── bench/            性能基准测试
-└── pratice/          练习目录
+├── pratice/          练习目录
+└── tests/            回归测试
 ```
 
 ## 快速开始
