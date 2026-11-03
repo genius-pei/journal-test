@@ -4,3 +4,4 @@ example/test
 extend/test
 logfile/
 *.log
+bench/bench-output/

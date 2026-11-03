@@ -31,3 +31,9 @@ jobs:
           make -C extend
       - name: Run regression checks and README example
         run: bash tests/run.sh
+      - name: Build benchmark
+        run: make -C bench
+      - name: Run benchmark and verify output
+        run: |
+          cd bench
+          ./test
