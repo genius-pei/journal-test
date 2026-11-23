@@ -1,8 +1,11 @@
-# 高性能 C++ 日志库
+# journal — 头文件 only 的 C++11 同步/异步日志库
 
 [![C++ CI](https://github.com/genius-pei/journal-test/actions/workflows/ci.yml/badge.svg)](https://github.com/genius-pei/journal-test/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![C++11](https://img.shields.io/badge/C%2B%2B-11-blue)
+![header-only](https://img.shields.io/badge/header--only-yes-brightgreen)
 
-一个 C++11 日志库，支持同步/异步日志、多级别过滤、灵活的输出格式和可扩展的 Sink 架构。
+一个 C++11 日志库，支持同步/异步日志、多级别过滤、灵活的输出格式和可扩展的 Sink 架构。零依赖，只要 `#include` 就能用。
 
 ## 特性
 
@@ -33,6 +36,28 @@
 ├── bench/            性能基准测试
 └── tests/            回归测试
 ```
+
+## 集成到你的项目
+
+这是头文件库，没有构建产物，没有链接步骤。三种引入方式任选：
+
+```bash
+# 1. 直接复制头文件目录
+cp -r logs/ /your/project/third_party/journal/
+
+# 2. 作为 submodule
+git submodule add https://github.com/genius-pei/journal-test.git third_party/journal
+
+# 3. 下载后只取 logs/ 这一层（example、bench、tests 都不需要）
+```
+
+编译时加 include 路径和 pthread：
+
+```bash
+g++ -std=c++11 -I third_party/journal main.cc -lpthread
+```
+
+唯一的入口头文件是 `logs/yimingcode.h`，其余都是它的内部依赖，不需要单独 include。
 
 ## 快速开始
 
@@ -89,7 +114,18 @@ cd bench && make && ./test
 
 ## 性能
 
-在 bench/ 目录下运行基准测试，涵盖单线程/多线程的同步与异步场景。
+<!-- 把 bench 跑出来的真实数字填进下表。空着比写"很快"更糟：读者不会自己去编译。 -->
+<!-- 每组都在同一台机器、同一编译器下跑，并注明 CPU 型号与 g++ 版本。 -->
+
+测试环境：[待填：CPU 型号] / [待填：g++ 版本] / `-O2` / [待填：记录条数，如 1,000,000 条]
+
+| 场景 | 生产者耗时 | 消费者排空 | 总耗时 | 吞吐量 |
+|---|---|---|---|---|
+| 单线程 · 同步 · FileSink | [待填] | — | [待填] | [待填] 万条/秒 |
+| 单线程 · 异步 · FileSink | [待填] | [待填] | [待填] | [待填] 万条/秒 |
+| 4 线程 · 异步 · FileSink | [待填] | [待填] | [待填] | [待填] 万条/秒 |
+
+在 `bench/` 目录下运行基准测试，涵盖单线程/多线程的同步与异步场景。
 
 在 `bench/` 目录运行 `make && ./test`。基准覆盖同步与异步文件输出，并报告生产者完成时间、异步消费者排空时间、总耗时和吞吐量。
 
